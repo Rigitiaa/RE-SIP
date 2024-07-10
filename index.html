@@ -27,6 +27,15 @@
             text-align: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
+        footer {
+            background-color: #a3b3cc;
+            width: 100%;
+            padding: 10px;
+            text-align: center;
+            box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+            position: fixed;
+            bottom: 0;
+        }
         .ol-control > * {
             background-color: #f8f8f8!important;
             color: #444444!important;
@@ -50,6 +59,45 @@
             height: 579px;
             border: 2px solid #444444;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        .ol-popup {
+            position: absolute;
+            background-color: white;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #cccccc;
+            bottom: 12px;
+            left: -50px;
+            min-width: 280px;
+        }
+        .ol-popup:after, .ol-popup:before {
+            top: 100%;
+            border: solid transparent;
+            content: " ";
+            height: 0;
+            width: 0;
+            position: absolute;
+            pointer-events: none;
+        }
+        .ol-popup:after {
+            border-top-color: white;
+            border-width: 10px;
+            left: 48px;
+            margin-left: -10px;
+        }
+        .ol-popup:before {
+            border-top-color: #cccccc;
+            border-width: 11px;
+            left: 48px;
+            margin-left: -11px;
+        }
+        .ol-popup-closer {
+            text-decoration: none;
+            position: absolute;
+            top: 2px;
+            right: 8px;
         }
     </style>
     <title>Analisis Kerentanan Kota Surakarta</title>
@@ -64,6 +112,9 @@
             <div id="popup-content"></div>
         </div>
     </div>
+    <footer>
+        &copy; 2024 Analisis Kerentanan Kota Surakarta. All rights reserved.
+    </footer>
     <script src="resources/qgis2web_expressions.js"></script>
     <script src="resources/polyfills.js"></script>
     <script src="./resources/functions.js"></script>
@@ -74,5 +125,43 @@
     <script src="./layers/layers.js" type="text/javascript"></script> 
     <script src="./resources/Autolinker.min.js"></script>
     <script src="./resources/qgis2web.js"></script>
+    <script>
+        // Create a map
+        var map = new ol.Map({
+            target: 'map',
+            layers: layersList,
+            view: new ol.View({
+                center: ol.proj.fromLonLat([0, 0]),
+                zoom: 2
+            })
+        });
+
+        var container = document.getElementById('popup');
+        var content = document.getElementById('popup-content');
+        var closer = document.getElementById('popup-closer');
+
+        var overlay = new ol.Overlay({
+            element: container,
+            autoPan: true,
+            autoPanAnimation: {
+                duration: 250
+            }
+        });
+        map.addOverlay(overlay);
+
+        closer.onclick = function() {
+            overlay.setPosition(undefined);
+            closer.blur();
+            return false;
+        };
+
+        map.on('singleclick', function(evt) {
+            var coordinate = evt.coordinate;
+            var hdms = ol.coordinate.toStringHDMS(ol.proj.toLonLat(coordinate));
+
+            content.innerHTML = '<p>You clicked here:</p><code>' + hdms + '</code>';
+            overlay.setPosition(coordinate);
+        });
+    </script>
 </body>
 </html>
